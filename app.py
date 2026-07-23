@@ -65,33 +65,42 @@ BINGO_HTML = """
     display: flex;
     justify-content: center;
     align-items: stretch;
-    gap: 22px;
-    margin: 10px 0;
+    gap: 26px;
+    margin: 16px 0;
   }
 
-  .fs-active .columns { gap: 1.6vw; margin: 1.5vh 0; }
+  .fs-active .columns { gap: 2vw; margin: 2vh 0; }
 
   .col {
     flex: 1;
-    max-width: 260px;
-    padding: 16px 12px;
-    border-radius: 18px;
+    max-width: 240px;
+    padding: 36px 12px;
+    border-radius: 20px;
     background: rgba(255,255,255,0.05);
     border: 2px solid rgba(255,255,255,0.1);
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: box-shadow 0.2s ease, background 0.2s ease;
   }
 
-  .fs-active .col { max-width: 17vw; padding: 1.2vh 0.8vw; }
+  .fs-active .col { max-width: 17vw; padding: 3vh 1vw; }
+
+  @keyframes flash {
+    0%   { box-shadow: 0 0 0 rgba(255,255,255,0); background: rgba(255,255,255,0.05); }
+    35%  { box-shadow: 0 0 40px rgba(255,255,255,0.55); background: rgba(255,255,255,0.18); }
+    100% { box-shadow: 0 0 0 rgba(255,255,255,0); background: rgba(255,255,255,0.05); }
+  }
+
+  .col.flash { animation: flash 1s ease-out; }
 
   .col .letter {
-    font-size: 3.2em;
+    font-size: 6.5em;
     font-weight: bold;
-    margin-bottom: 10px;
-    flex-shrink: 0;
+    line-height: 1;
   }
 
-  .fs-active .col .letter { font-size: 3.8vw; }
+  .fs-active .col .letter { font-size: 7.5vw; }
 
   .colB .letter { color: #ff5f6d; }
   .colI .letter { color: #ffc371; }
@@ -103,21 +112,21 @@ BINGO_HTML = """
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 90px;
-    margin: 10px 0;
+    height: 150px;
+    margin: 12px 0;
   }
 
-  .fs-active #current-area { height: 10vh; margin: 1.5vh 0; }
+  .fs-active #current-area { height: 16vh; margin: 1.5vh 0; }
 
   #current {
-    font-size: 4.2em;
+    font-size: 7em;
     font-weight: bold;
     color: white;
-    letter-spacing: 3px;
-    text-shadow: 0 0 22px rgba(255,255,255,0.55);
+    letter-spacing: 4px;
+    text-shadow: 0 0 30px rgba(255,255,255,0.6);
   }
 
-  .fs-active #current { font-size: 5.5vw; }
+  .fs-active #current { font-size: 9vw; }
 
   @keyframes pop {
     0% { transform: scale(0.3); opacity: 0; }
@@ -178,39 +187,9 @@ BINGO_HTML = """
   #pauseBtn { background: linear-gradient(90deg, #ffb347, #ff8c00); color: white; }
   #resetBtn { background: linear-gradient(90deg, #ff5f6d, #c9184a); color: white; }
   #fullBtn  { background: linear-gradient(90deg, #36a2eb, #1976d2); color: white; }
-
-  .col .grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-    font-size: 0.85em;
-    overflow-y: auto;
-    flex: 1;
-    min-height: 0;
-    max-height: 300px;
-    padding-right: 2px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.3) transparent;
-  }
-
-  .col .grid::-webkit-scrollbar { width: 5px; }
-  .col .grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
-
-  .fs-active .col .grid { font-size: 0.9vw; max-height: 40vh; }
-
-  .col .grid span {
-    padding: 4px 0;
-    border-radius: 5px;
-    opacity: 0.35;
-  }
-
-  .col .grid span.used {
-    opacity: 1;
-    background: rgba(255,255,255,0.25);
-    font-weight: bold;
-  }
 </style>
 </head>
+
 <body>
 
 <div id="bingo-wrap">
@@ -258,15 +237,6 @@ BINGO_HTML = """
       letterDiv.className = 'letter';
       letterDiv.textContent = L;
       col.appendChild(letterDiv);
-      const grid = document.createElement('div');
-      grid.className = 'grid';
-      for (let n = NUM_MIN; n <= NUM_MAX; n++) {
-        const span = document.createElement('span');
-        span.textContent = n;
-        span.id = 'num-' + L + '-' + n;
-        grid.appendChild(span);
-      }
-      col.appendChild(grid);
       columnsDiv.appendChild(col);
     });
   }
@@ -292,7 +262,6 @@ BINGO_HTML = """
     historyDiv.innerHTML = '';
     current.textContent = '--';
     current.className = '';
-    document.querySelectorAll('.grid span').forEach(s => s.classList.remove('used'));
   }
 
   function callNumber() {
@@ -309,10 +278,11 @@ BINGO_HTML = """
     current.textContent = L + n;
     current.classList.add('pop');
 
-    const numSpan = document.getElementById('num-' + L + '-' + n);
-    if (numSpan) {
-      numSpan.classList.add('used');
-      numSpan.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    const col = document.querySelector('.col' + L);
+    if (col) {
+      col.classList.remove('flash');
+      void col.offsetWidth;
+      col.classList.add('flash');
     }
 
     const tag = document.createElement('span');
@@ -406,4 +376,4 @@ BINGO_HTML = """
 </html>
 """
 
-components.html(BINGO_HTML, height=880, scrolling=False)
+components.html(BINGO_HTML, height=780, scrolling=False)
