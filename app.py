@@ -10,10 +10,12 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    .block-container {padding-top: 1rem; padding-bottom: 0rem; max-width: 1100px;}
+    .block-container {padding: 0.5rem 1rem 0rem 1rem; max-width: 100%;}
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
+    div[data-testid="stAppViewContainer"] {padding: 0;}
+    iframe {display: block;}
     </style>
     """,
     unsafe_allow_html=True,
@@ -28,20 +30,25 @@ BINGO_HTML = """
     margin: 0;
     padding: 0;
     background: transparent;
+    height: 100%;
   }
 
   #bingo-wrap {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: radial-gradient(circle at top, #1e2a52, #0a0f24);
     color: white;
-    padding: 20px 20px 10px 20px;
+    padding: 30px 40px;
     border-radius: 20px;
     text-align: center;
     width: 100%;
-    max-width: 1250px;
+    max-width: 100%;
+    height: 100%;
     margin: auto;
     box-sizing: border-box;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   #bingo-wrap.fs-active {
@@ -57,30 +64,30 @@ BINGO_HTML = """
   .columns {
     display: flex;
     justify-content: center;
-    gap: 16px;
-    margin: 20px 0;
+    gap: 26px;
+    margin: 10px 0;
   }
 
-  .fs-active .columns { gap: 1.8vw; margin: 2vh 0; }
+  .fs-active .columns { gap: 2vw; margin: 2vh 0; }
 
   .col {
     flex: 1;
-    max-width: 220px;
-    padding: 16px 10px;
-    border-radius: 16px;
+    max-width: 340px;
+    padding: 30px 18px;
+    border-radius: 20px;
     background: rgba(255,255,255,0.05);
     border: 2px solid rgba(255,255,255,0.1);
   }
 
-  .fs-active .col { max-width: 16vw; padding: 1.4vh 0.8vw; }
+  .fs-active .col { max-width: 18vw; padding: 1.8vh 1vw; }
 
   .col .letter {
-    font-size: 2.4em;
+    font-size: 4.2em;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 18px;
   }
 
-  .fs-active .col .letter { font-size: 3.4vw; }
+  .fs-active .col .letter { font-size: 5vw; }
 
   .colB .letter { color: #ff5f6d; }
   .colI .letter { color: #ffc371; }
@@ -92,21 +99,21 @@ BINGO_HTML = """
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 70px;
-    margin: 10px 0;
+    height: 110px;
+    margin: 16px 0;
   }
 
-  .fs-active #current-area { height: 9vh; margin: 1.5vh 0; }
+  .fs-active #current-area { height: 10vh; margin: 1.5vh 0; }
 
   #current {
-    font-size: 2.4em;
+    font-size: 4.2em;
     font-weight: bold;
     color: white;
-    letter-spacing: 2px;
-    text-shadow: 0 0 18px rgba(255,255,255,0.5);
+    letter-spacing: 3px;
+    text-shadow: 0 0 22px rgba(255,255,255,0.55);
   }
 
-  .fs-active #current { font-size: 4vw; }
+  .fs-active #current { font-size: 5.5vw; }
 
   @keyframes pop {
     0% { transform: scale(0.3); opacity: 0; }
@@ -118,20 +125,20 @@ BINGO_HTML = """
 
   .called-num {
     display: inline-block;
-    margin: 2px;
-    padding: 6px 10px;
+    margin: 3px;
+    padding: 8px 14px;
     border-radius: 8px;
-    font-size: 0.9em;
+    font-size: 1.05em;
     background: rgba(255,255,255,0.08);
   }
 
   .fs-active .called-num { font-size: 1.3vw; padding: 0.6vh 1vw; }
 
   #history {
-    max-height: 90px;
+    max-height: 110px;
     overflow-y: auto;
-    margin-top: 10px;
-    padding: 8px;
+    margin-top: 14px;
+    padding: 10px;
     background: rgba(0,0,0,0.2);
     border-radius: 10px;
   }
@@ -139,27 +146,27 @@ BINGO_HTML = """
   .fs-active #history { max-height: 12vh; }
 
   .btns {
-    margin-top: 14px;
+    margin-top: 26px;
     margin-bottom: 4px;
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 22px;
     flex-wrap: wrap;
   }
 
   .fs-active .btns { margin-top: 2vh; }
 
   button {
-    padding: 12px 26px;
-    font-size: 1em;
+    padding: 22px 44px;
+    font-size: 1.5em;
     border: none;
-    border-radius: 30px;
+    border-radius: 36px;
     cursor: pointer;
     font-weight: bold;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .fs-active button { padding: 1.2vh 2vw; font-size: 1.1vw; }
+  .fs-active button { padding: 1.8vh 2.5vw; font-size: 1.6vw; }
 
   button:hover { transform: translateY(-2px) scale(1.03); }
 
@@ -171,15 +178,15 @@ BINGO_HTML = """
   .col .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
-    font-size: 0.62em;
+    gap: 6px;
+    font-size: 1.1em;
   }
 
-  .fs-active .col .grid { font-size: 0.9vw; }
+  .fs-active .col .grid { font-size: 1.1vw; }
 
   .col .grid span {
-    padding: 2px 0;
-    border-radius: 4px;
+    padding: 6px 0;
+    border-radius: 5px;
     opacity: 0.35;
   }
 
@@ -391,4 +398,4 @@ BINGO_HTML = """
 </html>
 """
 
-components.html(BINGO_HTML, height=900, scrolling=False)
+components.html(BINGO_HTML, height=1100, scrolling=False)
