@@ -220,11 +220,11 @@ BINGO_HTML = """
 (function() {
   const letters = ['B','I','N','G','O'];
   const ranges = {
-    B: [0, 16],
-    I: [17, 32],
-    N: [33, 48],
-    G: [49, 64],
-    O: [65, 80]
+    B: [0, 80],
+    I: [0, 80],
+    N: [0, 80],
+    G: [0, 80],
+    O: [0, 80]
   };
 
   const columnsDiv = document.getElementById('columns');
