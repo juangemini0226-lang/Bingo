@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="Bingo Animado",
+    page_title="Bingo",
     page_icon="🎱",
     layout="wide",
 )
@@ -10,8 +10,9 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    .block-container {padding-top: 1.5rem; padding-bottom: 1rem;}
+    .block-container {padding-top: 1rem; padding-bottom: 0rem; max-width: 1100px;}
     #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
     footer {visibility: hidden;}
     </style>
     """,
@@ -33,11 +34,11 @@ BINGO_HTML = """
     font-family: 'Segoe UI', Arial, sans-serif;
     background: radial-gradient(circle at top, #1e2a52, #0a0f24);
     color: white;
-    padding: 30px;
+    padding: 20px 20px 10px 20px;
     border-radius: 20px;
     text-align: center;
     width: 100%;
-    max-width: 950px;
+    max-width: 1250px;
     margin: auto;
     box-sizing: border-box;
     transition: all 0.3s ease;
@@ -53,44 +54,33 @@ BINGO_HTML = """
     justify-content: center;
   }
 
-  #bingo-wrap h1 {
-    letter-spacing: 8px;
-    margin-bottom: 10px;
-    font-size: 2.5em;
-    background: linear-gradient(90deg, #ff5f6d, #ffc371, #47cf73, #36a2eb, #d264ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .fs-active h1 { font-size: 4vw; }
-
   .columns {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin: 25px 0;
+    gap: 16px;
+    margin: 20px 0;
   }
 
-  .fs-active .columns { gap: 1.5vw; margin: 2vh 0; }
+  .fs-active .columns { gap: 1.8vw; margin: 2vh 0; }
 
   .col {
     flex: 1;
-    max-width: 150px;
-    padding: 10px 5px;
-    border-radius: 12px;
+    max-width: 220px;
+    padding: 16px 10px;
+    border-radius: 16px;
     background: rgba(255,255,255,0.05);
     border: 2px solid rgba(255,255,255,0.1);
   }
 
-  .fs-active .col { max-width: 12vw; padding: 1vh 0.5vw; }
+  .fs-active .col { max-width: 16vw; padding: 1.4vh 0.8vw; }
 
   .col .letter {
-    font-size: 1.6em;
+    font-size: 2.4em;
     font-weight: bold;
-    margin-bottom: 6px;
+    margin-bottom: 10px;
   }
 
-  .fs-active .col .letter { font-size: 2.5vw; }
+  .fs-active .col .letter { font-size: 3.4vw; }
 
   .colB .letter { color: #ff5f6d; }
   .colI .letter { color: #ffc371; }
@@ -98,44 +88,25 @@ BINGO_HTML = """
   .colG .letter { color: #36a2eb; }
   .colO .letter { color: #d264ff; }
 
-  #ball-area {
+  #current-area {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 180px;
-    margin: 20px 0;
+    height: 70px;
+    margin: 10px 0;
   }
 
-  .fs-active #ball-area { height: 22vh; margin: 2vh 0; }
+  .fs-active #current-area { height: 9vh; margin: 1.5vh 0; }
 
-  #ball {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.2em;
+  #current {
+    font-size: 2.4em;
     font-weight: bold;
     color: white;
-    background: linear-gradient(145deg, #333, #111);
-    box-shadow: 0 0 25px rgba(255,255,255,0.3), inset 0 0 15px rgba(255,255,255,0.2);
-    transition: transform 0.15s ease, width 0.3s ease, height 0.3s ease;
+    letter-spacing: 2px;
+    text-shadow: 0 0 18px rgba(255,255,255,0.5);
   }
 
-  .fs-active #ball {
-    width: 20vh;
-    height: 20vh;
-    font-size: 4vw;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg) scale(1); }
-    50% { transform: rotate(540deg) scale(1.15); }
-    100% { transform: rotate(1080deg) scale(1); }
-  }
-
-  #ball.spinning { animation: spin 0.9s ease-in-out; }
+  .fs-active #current { font-size: 4vw; }
 
   @keyframes pop {
     0% { transform: scale(0.3); opacity: 0; }
@@ -143,7 +114,7 @@ BINGO_HTML = """
     100% { transform: scale(1); }
   }
 
-  #ball.pop { animation: pop 0.4s ease-out; }
+  #current.pop { animation: pop 0.4s ease-out; }
 
   .called-num {
     display: inline-block;
@@ -168,7 +139,8 @@ BINGO_HTML = """
   .fs-active #history { max-height: 12vh; }
 
   .btns {
-    margin-top: 20px;
+    margin-top: 14px;
+    margin-bottom: 4px;
     display: flex;
     justify-content: center;
     gap: 15px;
@@ -221,12 +193,10 @@ BINGO_HTML = """
 <body>
 
 <div id="bingo-wrap">
-  <h1>B I N G O</h1>
-
   <div class="columns" id="columns"></div>
 
-  <div id="ball-area">
-    <div id="ball">--</div>
+  <div id="current-area">
+    <div id="current">--</div>
   </div>
 
   <div id="history"></div>
@@ -251,7 +221,7 @@ BINGO_HTML = """
   };
 
   const columnsDiv = document.getElementById('columns');
-  const ball = document.getElementById('ball');
+  const current = document.getElementById('current');
   const historyDiv = document.getElementById('history');
   const startBtn = document.getElementById('startBtn');
   const pauseBtn = document.getElementById('pauseBtn');
@@ -307,8 +277,8 @@ BINGO_HTML = """
     for (let n = 0; n <= 80; n++) pool.push(n);
     shuffle(pool);
     historyDiv.innerHTML = '';
-    ball.textContent = '--';
-    ball.className = '';
+    current.textContent = '--';
+    current.className = '';
     document.querySelectorAll('.grid span').forEach(s => s.classList.remove('used'));
   }
 
@@ -316,19 +286,16 @@ BINGO_HTML = """
     if (pool.length === 0) {
       clearInterval(timer);
       running = false;
-      ball.textContent = 'FIN';
+      current.textContent = 'FIN';
       return;
     }
     const n = pool.pop();
     const L = letterFor(n);
 
-    ball.classList.remove('pop');
-    ball.classList.add('spinning');
-    setTimeout(() => {
-      ball.classList.remove('spinning');
-      ball.textContent = L + n;
-      ball.classList.add('pop');
-    }, 850);
+    current.classList.remove('pop');
+    void current.offsetWidth; // reinicia la animación
+    current.textContent = L + n;
+    current.classList.add('pop');
 
     const numSpan = document.getElementById('num-' + n);
     if (numSpan) numSpan.classList.add('used');
@@ -424,13 +391,4 @@ BINGO_HTML = """
 </html>
 """
 
-st.title("🎱 Bingo Animado")
-st.caption("Números del 0 al 80 · Sorteo aleatorio cada 4 segundos")
-
-components.html(BINGO_HTML, height=850, scrolling=False)
-
-st.markdown("---")
-st.caption(
-    "Tip: si el botón de pantalla completa no responde en tu navegador, "
-    "usa F11 para poner el navegador en pantalla completa manualmente."
-)
+components.html(BINGO_HTML, height=900, scrolling=False)
