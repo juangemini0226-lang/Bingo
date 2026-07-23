@@ -64,30 +64,34 @@ BINGO_HTML = """
   .columns {
     display: flex;
     justify-content: center;
-    gap: 26px;
+    align-items: stretch;
+    gap: 22px;
     margin: 10px 0;
   }
 
-  .fs-active .columns { gap: 2vw; margin: 2vh 0; }
+  .fs-active .columns { gap: 1.6vw; margin: 1.5vh 0; }
 
   .col {
     flex: 1;
-    max-width: 340px;
-    padding: 30px 18px;
-    border-radius: 20px;
+    max-width: 260px;
+    padding: 16px 12px;
+    border-radius: 18px;
     background: rgba(255,255,255,0.05);
     border: 2px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
   }
 
-  .fs-active .col { max-width: 18vw; padding: 1.8vh 1vw; }
+  .fs-active .col { max-width: 17vw; padding: 1.2vh 0.8vw; }
 
   .col .letter {
-    font-size: 4.2em;
+    font-size: 3.2em;
     font-weight: bold;
-    margin-bottom: 18px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
   }
 
-  .fs-active .col .letter { font-size: 5vw; }
+  .fs-active .col .letter { font-size: 3.8vw; }
 
   .colB .letter { color: #ff5f6d; }
   .colI .letter { color: #ffc371; }
@@ -99,8 +103,8 @@ BINGO_HTML = """
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 110px;
-    margin: 16px 0;
+    height: 90px;
+    margin: 10px 0;
   }
 
   .fs-active #current-area { height: 10vh; margin: 1.5vh 0; }
@@ -146,7 +150,7 @@ BINGO_HTML = """
   .fs-active #history { max-height: 12vh; }
 
   .btns {
-    margin-top: 26px;
+    margin-top: 16px;
     margin-bottom: 4px;
     display: flex;
     justify-content: center;
@@ -178,14 +182,24 @@ BINGO_HTML = """
   .col .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    font-size: 1.1em;
+    gap: 4px;
+    font-size: 0.85em;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    max-height: 300px;
+    padding-right: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
   }
 
-  .fs-active .col .grid { font-size: 1.1vw; }
+  .col .grid::-webkit-scrollbar { width: 5px; }
+  .col .grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+
+  .fs-active .col .grid { font-size: 0.9vw; max-height: 40vh; }
 
   .col .grid span {
-    padding: 6px 0;
+    padding: 4px 0;
     border-radius: 5px;
     opacity: 0.35;
   }
@@ -219,13 +233,8 @@ BINGO_HTML = """
 <script>
 (function() {
   const letters = ['B','I','N','G','O'];
-  const ranges = {
-    B: [0, 80],
-    I: [0, 80],
-    N: [0, 80],
-    G: [0, 80],
-    O: [0, 80]
-  };
+  const NUM_MIN = 0;
+  const NUM_MAX = 80;
 
   const columnsDiv = document.getElementById('columns');
   const current = document.getElementById('current');
@@ -243,7 +252,6 @@ BINGO_HTML = """
   function buildColumns() {
     columnsDiv.innerHTML = '';
     letters.forEach(L => {
-      const [lo, hi] = ranges[L];
       const col = document.createElement('div');
       col.className = 'col col' + L;
       const letterDiv = document.createElement('div');
@@ -252,21 +260,15 @@ BINGO_HTML = """
       col.appendChild(letterDiv);
       const grid = document.createElement('div');
       grid.className = 'grid';
-      for (let n = lo; n <= hi; n++) {
+      for (let n = NUM_MIN; n <= NUM_MAX; n++) {
         const span = document.createElement('span');
         span.textContent = n;
-        span.id = 'num-' + n;
+        span.id = 'num-' + L + '-' + n;
         grid.appendChild(span);
       }
       col.appendChild(grid);
       columnsDiv.appendChild(col);
     });
-  }
-
-  function letterFor(n) {
-    for (const L of letters) {
-      if (n >= ranges[L][0] && n <= ranges[L][1]) return L;
-    }
   }
 
   function shuffle(arr) {
@@ -281,7 +283,11 @@ BINGO_HTML = """
     clearInterval(timer);
     running = false;
     pool = [];
-    for (let n = 0; n <= 80; n++) pool.push(n);
+    letters.forEach(L => {
+      for (let n = NUM_MIN; n <= NUM_MAX; n++) {
+        pool.push({ letter: L, num: n });
+      }
+    });
     shuffle(pool);
     historyDiv.innerHTML = '';
     current.textContent = '--';
@@ -296,16 +302,18 @@ BINGO_HTML = """
       current.textContent = 'FIN';
       return;
     }
-    const n = pool.pop();
-    const L = letterFor(n);
+    const { letter: L, num: n } = pool.pop();
 
     current.classList.remove('pop');
     void current.offsetWidth; // reinicia la animación
     current.textContent = L + n;
     current.classList.add('pop');
 
-    const numSpan = document.getElementById('num-' + n);
-    if (numSpan) numSpan.classList.add('used');
+    const numSpan = document.getElementById('num-' + L + '-' + n);
+    if (numSpan) {
+      numSpan.classList.add('used');
+      numSpan.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
 
     const tag = document.createElement('span');
     tag.className = 'called-num';
@@ -398,4 +406,4 @@ BINGO_HTML = """
 </html>
 """
 
-components.html(BINGO_HTML, height=1100, scrolling=False)
+components.html(BINGO_HTML, height=880, scrolling=False)
